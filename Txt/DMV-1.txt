@@ -1,0 +1,362 @@
+
+
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+    # Load data from specified paths
+    csv_data = pd.read_csv("sales_data_sample.csv", encoding="ISO-8859-1")
+    excel_data = pd.read_excel("Sample-Sales-Data.xlsx")
+    json_data = pd.read_json("sample4.json")
+
+    # Display the first row of each dataset to confirm successful loading
+    print("CSV Data Sample:\n", csv_data.head(1))
+    print("Excel Data Sample:\n", excel_data.head(1))
+    print("JSON Data Sample:\n", json_data.head(1))
+
+    # Concatenate datasets into a single DataFrame and reset index
+    df = pd.concat([csv_data, excel_data, json_data], ignore_index=True)
+
+    # Identify and convert columns with unhashable types (like dicts)
+    for col in df.columns:
+        if df[col].apply(lambda x: isinstance(x, dict)).any():
+            print(f"Column '{col}' contains dictionaries or unhashable types and will be converted to strings.")
+            df[col] = df[col].apply(lambda x: str(x) if isinstance(x, dict) else x)
+
+    # Display a random sample of rows to check the merged data
+    print("Sample Data:\n", df.sample(3))
+
+    # Data overview
+    print("Data Description:\n", df.describe())
+    print("Data Info:\n")
+    df.info()
+    print("Data Types:\n", df.dtypes)
+
+    # Data Cleaning
+    print("Missing Values by Column:\n", df.isna().sum())
+    print("Number of Duplicates Before Dropping:", df.duplicated().sum())
+    df.drop_duplicates(inplace=True)
+    print("Number of Duplicates After Dropping:", df.duplicated().sum())
+
+    # Analysis: Ensure required columns are present
+    if 'Total' in df.columns and 'Gender' in df.columns and 'Product line' in df.columns:
+        # Total sales
+        total_sales = df['Total'].sum()
+        print("Total Sales:", total_sales)
+
+        # Average order value by gender
+        average_order_value = df.groupby('Gender')['Total'].mean()
+        print("Average Order Value by Gender:\n", average_order_value)
+
+        # Product category distribution
+        product_category_distribution = df['Product line'].value_counts()
+        print("Product Category Distribution:\n", product_category_distribution)
+
+        # Column names
+        print("DataFrame Columns:\n", df.columns)
+
+        # Visualization
+        # Boxplot of numerical data
+        df.boxplot(column=['Total'])  # Adjust 'Total' if needed to match your column names
+        plt.title('Boxplot of Total Sales')
+        plt.show()
+
+        # Bar plot of Total Sales by Product Category
+        plt.figure(figsize=(12, 6))
+        df.groupby('Product line')['Total'].sum().plot(kind='bar', color='skyblue')
+        plt.xlabel('Product Category')
+        plt.ylabel('Total Sales Amount')
+        plt.title('Total Sales by Product Category')
+        plt.xticks(rotation=20)
+        plt.show()
+    else:
+        print("Required columns 'Total', 'Gender', or 'Product line' not found in DataFrame.")
+
+    CSV Data Sample:
+        ORDERNUMBER  QUANTITYORDERED  PRICEEACH  ORDERLINENUMBER   SALES  \
+    0        10107               30       95.7                2  2871.0   
+
+            ORDERDATE   STATUS  QTR_ID  MONTH_ID  YEAR_ID  ...  \
+    0  2/24/2003 0:00  Shipped       1         2     2003  ...   
+
+                  ADDRESSLINE1  ADDRESSLINE2 CITY STATE POSTALCODE COUNTRY  \
+    0  897 Long Airport Avenue           NaN  NYC    NY      10022     USA   
+
+      TERRITORY CONTACTLASTNAME CONTACTFIRSTNAME DEALSIZE  
+    0       NaN              Yu             Kwai    Small  
+
+    [1 rows x 25 columns]
+    Excel Data Sample:
+        Postcode  Sales_Rep_ID Sales_Rep_Name  Year         Value
+    0      2121           456           Jane  2011  84219.497311
+    JSON Data Sample:
+                                                   people
+    0  {'firstName': 'Joe', 'lastName': 'Jackson', 'g...
+    Column 'people' contains dictionaries or unhashable types and will be converted to strings.
+    Sample Data:
+           ORDERNUMBER  QUANTITYORDERED  PRICEEACH  ORDERLINENUMBER    SALES  \
+    1082      10314.0             23.0     100.00              3.0  2481.70   
+    1544      10173.0             31.0      31.53              9.0   977.43   
+    747       10356.0             29.0     100.00              3.0  3630.22   
+
+                ORDERDATE   STATUS  QTR_ID  MONTH_ID  YEAR_ID  ... TERRITORY  \
+    1082  10/22/2004 0:00  Shipped     4.0      10.0   2004.0  ...      EMEA   
+    1544   11/5/2003 0:00  Shipped     4.0      11.0   2003.0  ...      EMEA   
+    747    12/9/2004 0:00  Shipped     4.0      12.0   2004.0  ...      EMEA   
+
+          CONTACTLASTNAME CONTACTFIRSTNAME DEALSIZE Postcode Sales_Rep_ID  \
+    1082            Ibsen            Palle    Small      NaN          NaN   
+    1544          Rovelli         Giovanni    Small      NaN          NaN   
+    747          Da Cunha           Daniel   Medium      NaN          NaN   
+
+         Sales_Rep_Name Year Value people  
+    1082            NaN  NaN   NaN    NaN  
+    1544            NaN  NaN   NaN    NaN  
+    747             NaN  NaN   NaN    NaN  
+
+    [3 rows x 31 columns]
+    Data Description:
+             ORDERNUMBER  QUANTITYORDERED    PRICEEACH  ORDERLINENUMBER  \
+    count   2823.000000      2823.000000  2823.000000      2823.000000   
+    mean   10258.725115        35.092809    83.658544         6.466171   
+    std       92.085478         9.741443    20.174277         4.225841   
+    min    10100.000000         6.000000    26.880000         1.000000   
+    25%    10180.000000        27.000000    68.860000         3.000000   
+    50%    10262.000000        35.000000    95.700000         6.000000   
+    75%    10333.500000        43.000000   100.000000         9.000000   
+    max    10425.000000        97.000000   100.000000        18.000000   
+
+                  SALES       QTR_ID     MONTH_ID     YEAR_ID         MSRP  \
+    count   2823.000000  2823.000000  2823.000000  2823.00000  2823.000000   
+    mean    3553.889072     2.717676     7.092455  2003.81509   100.715551   
+    std     1841.865106     1.203878     3.656633     0.69967    40.187912   
+    min      482.130000     1.000000     1.000000  2003.00000    33.000000   
+    25%     2203.430000     2.000000     4.000000  2003.00000    68.000000   
+    50%     3184.800000     3.000000     8.000000  2004.00000    99.000000   
+    75%     4508.000000     4.000000    11.000000  2004.00000   124.000000   
+    max    14082.800000     4.000000    12.000000  2005.00000   214.000000   
+
+              Postcode  Sales_Rep_ID         Year         Value  
+    count   390.000000    390.000000   390.000000    390.000000  
+    mean   2098.430769    456.000000  2012.000000  49229.388305  
+    std      58.652206    272.242614     0.817545  28251.271309  
+    min    2000.000000    123.000000  2011.000000    106.360599  
+    25%    2044.000000    123.000000  2011.000000  26101.507357  
+    50%    2097.500000    456.000000  2012.000000  47447.363750  
+    75%    2142.000000    789.000000  2013.000000  72277.800608  
+    max    2206.000000    789.000000  2013.000000  99878.489209  
+    Data Info:
+
+    <class 'pandas.core.frame.DataFrame'>
+    RangeIndex: 3216 entries, 0 to 3215
+    Data columns (total 31 columns):
+     #   Column            Non-Null Count  Dtype  
+    ---  ------            --------------  -----  
+     0   ORDERNUMBER       2823 non-null   float64
+     1   QUANTITYORDERED   2823 non-null   float64
+     2   PRICEEACH         2823 non-null   float64
+     3   ORDERLINENUMBER   2823 non-null   float64
+     4   SALES             2823 non-null   float64
+     5   ORDERDATE         2823 non-null   object 
+     6   STATUS            2823 non-null   object 
+     7   QTR_ID            2823 non-null   float64
+     8   MONTH_ID          2823 non-null   float64
+     9   YEAR_ID           2823 non-null   float64
+     10  PRODUCTLINE       2823 non-null   object 
+     11  MSRP              2823 non-null   float64
+     12  PRODUCTCODE       2823 non-null   object 
+     13  CUSTOMERNAME      2823 non-null   object 
+     14  PHONE             2823 non-null   object 
+     15  ADDRESSLINE1      2823 non-null   object 
+     16  ADDRESSLINE2      302 non-null    object 
+     17  CITY              2823 non-null   object 
+     18  STATE             1337 non-null   object 
+     19  POSTALCODE        2747 non-null   object 
+     20  COUNTRY           2823 non-null   object 
+     21  TERRITORY         1749 non-null   object 
+     22  CONTACTLASTNAME   2823 non-null   object 
+     23  CONTACTFIRSTNAME  2823 non-null   object 
+     24  DEALSIZE          2823 non-null   object 
+     25  Postcode          390 non-null    float64
+     26  Sales_Rep_ID      390 non-null    float64
+     27  Sales_Rep_Name    390 non-null    object 
+     28  Year              390 non-null    float64
+     29  Value             390 non-null    float64
+     30  people            3 non-null      object 
+    dtypes: float64(13), object(18)
+    memory usage: 779.0+ KB
+    Data Types:
+     ORDERNUMBER         float64
+    QUANTITYORDERED     float64
+    PRICEEACH           float64
+    ORDERLINENUMBER     float64
+    SALES               float64
+    ORDERDATE            object
+    STATUS               object
+    QTR_ID              float64
+    MONTH_ID            float64
+    YEAR_ID             float64
+    PRODUCTLINE          object
+    MSRP                float64
+    PRODUCTCODE          object
+    CUSTOMERNAME         object
+    PHONE                object
+    ADDRESSLINE1         object
+    ADDRESSLINE2         object
+    CITY                 object
+    STATE                object
+    POSTALCODE           object
+    COUNTRY              object
+    TERRITORY            object
+    CONTACTLASTNAME      object
+    CONTACTFIRSTNAME     object
+    DEALSIZE             object
+    Postcode            float64
+    Sales_Rep_ID        float64
+    Sales_Rep_Name       object
+    Year                float64
+    Value               float64
+    people               object
+    dtype: object
+    Missing Values by Column:
+     ORDERNUMBER          393
+    QUANTITYORDERED      393
+    PRICEEACH            393
+    ORDERLINENUMBER      393
+    SALES                393
+    ORDERDATE            393
+    STATUS               393
+    QTR_ID               393
+    MONTH_ID             393
+    YEAR_ID              393
+    PRODUCTLINE          393
+    MSRP                 393
+    PRODUCTCODE          393
+    CUSTOMERNAME         393
+    PHONE                393
+    ADDRESSLINE1         393
+    ADDRESSLINE2        2914
+    CITY                 393
+    STATE               1879
+    POSTALCODE           469
+    COUNTRY              393
+    TERRITORY           1467
+    CONTACTLASTNAME      393
+    CONTACTFIRSTNAME     393
+    DEALSIZE             393
+    Postcode            2826
+    Sales_Rep_ID        2826
+    Sales_Rep_Name      2826
+    Year                2826
+    Value               2826
+    people              3213
+    dtype: int64
+    Number of Duplicates Before Dropping: 0
+    Number of Duplicates After Dropping: 0
+    Required columns 'Total', 'Gender', or 'Product line' not found in DataFrame.
+
+    #Interacting with Web APIs Problem Statement: Analyzing Weather Data from OpenWeatherMap API.
+    #The goal is to interact with the OpenWeatherMap API to retrieve weather data for a
+    #specific location and perform data modeling and visualization to analyze weather patterns over time.
+
+    import requests
+    import pandas as pd
+    import json
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    API_key = '91dc4e027d565d766d090eec6efb196c'
+    countries = ['Japan' , 'Saudi Arabia' , 'United States of America' , 'Indonesia' , 'India' , 'Egypt']
+
+    country_name_list = []
+    maxtemp = []
+    mintemp = []
+    humidity = []
+    windspeed = []
+
+    for country_names in countries:
+        url = f"https://api.openweathermap.org/data/2.5/weather?q={country_names}&appid={API_key}&units=metric"
+
+        r = requests.get(url)
+
+        data = r.json()
+
+        formatted_json = json.dumps(data, sort_keys=True, indent=4)
+
+        country_name_list.append(data['name'])
+        maxtemp.append(data['main']['temp_max'])
+        mintemp.append(data['main']['temp_min'])
+        humidity.append(data['main']['humidity'])
+        windspeed.append(data['wind']['speed'])
+
+    df = pd.DataFrame()
+    df['Names'] = country_name_list
+    df['Max_Temp'] = maxtemp
+    df['Min_Temp'] = mintemp
+    df['Humidity'] = humidity
+    df['WindSpeed'] = windspeed
+
+    df.head()
+    df
+    df.describe()
+    df.info()
+    df.duplicated().sum()
+
+    average_temperature = df.groupby('Names')['Max_Temp'].mean()
+    average_temperature
+
+    average_temperature = df.groupby('Names')['Min_Temp'].mean()
+    average_temperature
+
+    plt.figure(figsize=(12,6))
+    plt.bar(df['Names'],df['Max_Temp'], color = 'red')
+    plt.title('Max. Temp. in Diff. coumtries')
+    plt.xlabel('Countries')
+    plt.ylabel('Temperature')
+    plt.show()
+
+    plt.figure(figsize=(12,6))
+    plt.bar(df['Names'],df['Min_Temp'],color = 'lightblue')
+    plt.title('Min. temp. in Diff. Countries')
+    plt.xlabel('Countries')
+    plt.ylabel('Temperature')
+    plt.show()
+
+    plt.figure(figsize=(10,6))
+    plt.bar(df['Humidity'],df['Max_Temp'],color='lightgreen')
+    plt.title('Relation btwn Humidity & Max. Temp.')
+    plt.xlabel('Humidity')
+    plt.ylabel('Max. Temperature')
+    plt.show()
+
+    plt.figure(figsize=(12,6))
+    plt.bar(df['Names'],df['WindSpeed'],color='yellow')
+    plt.title('Locationwise Winspeed Variation')
+    plt.xlabel('Countries')
+    plt.ylabel('Windspeed')
+    plt.show()
+
+    sns.pairplot(df)
+    plt.show()
+
+    <class 'pandas.core.frame.DataFrame'>
+    RangeIndex: 6 entries, 0 to 5
+    Data columns (total 5 columns):
+     #   Column     Non-Null Count  Dtype  
+    ---  ------     --------------  -----  
+     0   Names      6 non-null      object 
+     1   Max_Temp   6 non-null      float64
+     2   Min_Temp   6 non-null      float64
+     3   Humidity   6 non-null      int64  
+     4   WindSpeed  6 non-null      float64
+    dtypes: float64(3), int64(1), object(1)
+    memory usage: 372.0+ bytes
+
+[]
+
+[]
+
+[]
+
+[]
+
+[]

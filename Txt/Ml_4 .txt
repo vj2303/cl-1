@@ -1,0 +1,29 @@
+
+
+    import pandas as pd
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from sklearn.cluster import KMeans
+
+    # Load the data
+    data = pd.read_csv("Iris.csv")
+    data.head()
+
+    # Select features for clustering
+    X = data.iloc[:, [1, 2, 3, 4]]
+
+    # Calculate inertia for different numbers of clusters
+    inertia = []
+    for i in range(1, 11):
+        kmeans = KMeans(n_clusters=i, max_iter=300, random_state=42)
+        kmeans.fit(X)
+        inertia.append(kmeans.inertia_)
+
+    # Plot the Elbow Method graph
+    plt.plot(range(1, 11), inertia, marker='o')
+    plt.xlabel('Number of Clusters')
+    plt.ylabel('Inertia (Within-cluster sum of squares)')
+    plt.title('Elbow Method')
+    plt.show()
+
+[]
